@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Server.Managers;
+using Server.Managers.Interfaces;
 using ServerLibrary.Data.DbContexts;
 using ServerLibrary.Helpers;
+using ServerLibrary.Repositories.Implementations;
+using ServerLibrary.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +22,6 @@ if(connectionString == null)
     throw new NullReferenceException("Connection string not found");
 }
 
-
 // Add db context as AppDbContext with SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -27,6 +30,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Register JwtSection
 builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSection"));
+
+/// Register Services
+builder.Services.AddScoped<IUserAccount, UserAccountRepository>();
+builder.Services.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
 var app = builder.Build();
 

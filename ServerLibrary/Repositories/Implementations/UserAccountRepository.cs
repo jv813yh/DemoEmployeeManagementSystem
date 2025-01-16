@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using ServerLibrary.Data.DbContexts;
 using ServerLibrary.Helpers;
 using ServerLibrary.Repositories.Interfaces;
-using System.Reflection.Metadata.Ecma335;
 
 namespace ServerLibrary.Repositories.Implementations
 {
@@ -60,11 +59,20 @@ namespace ServerLibrary.Repositories.Implementations
             };
 
             // Add user to the database
-            bool success = await AddAndConfirmWithTransactionNewUserAsync(user);
+            bool success = await AddAndConfirmWithTransactionNewItemAsync(user);
 
             if (success)
             {
-                
+                // Check if user is admin
+                bool isAdmin = user.Name.Equals(Constants.Admin, StringComparison.InvariantCultureIgnoreCase);
+
+                // Create system and user roles for the user in the system or admin
+                bool creatingWasSuccess = await CreateSystemAndUserRolesAsync(user.Id, isAdmin);
+
+                if (creatingWasSuccess)
+                {
+                    return new GeneralResponse(true, "Account created successfully");
+                }
             }
 
             return new GeneralResponse(false, "Account creation failed");
@@ -82,6 +90,8 @@ namespace ServerLibrary.Repositories.Implementations
             {
                 return new LoginResponse(false, "LoginDto is null");
             }
+
+
 
             return new LoginResponse(true, "Login successful", "token");
         }
@@ -101,17 +111,17 @@ namespace ServerLibrary.Repositories.Implementations
         }
 
         /// <summary>
-        /// Add new user to database and confirm with transaction
+        /// Add new item to database and confirm with transaction
         /// </summary>
         /// <param name="newUser"></param>
         /// <returns></returns>
-        private async Task<bool> AddAndConfirmWithTransactionNewUserAsync(ApplicationUser newUser)
+        private async Task<bool> AddAndConfirmWithTransactionNewItemAsync<TEntity>(TEntity item) where TEntity : class
         {
             using (var transaction = await _dbContext.Database.BeginTransactionAsync())
             {
                 try
                 {
-                    await _dbContext.ApplicationUsers.AddAsync(newUser);
+                    await _dbContext.Set<TEntity>().AddAsync(item);
                     await _dbContext.SaveChangesAsync();
                     await transaction.CommitAsync();
                 }
@@ -124,6 +134,71 @@ namespace ServerLibrary.Repositories.Implementations
 
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Create system and user roles, only one admin role can be created in the system
+        /// and a lot of user roles can be created
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="isAdmin"></param>
+        /// <returns></returns>
+        private async Task<bool> CreateSystemAndUserRolesAsync(int userId, bool isAdmin)
+        {
+           if(isAdmin)
+           {
+                // Check if admin role exists
+                var checkAdminRole = await _dbContext.SystemRoles.FirstOrDefaultAsync(_ => _.Name.Equals(Constants.Admin));
+                if (checkAdminRole == null)
+                {
+                    // Add admin role
+                    await AddAndConfirmWithTransactionNewItemAsync(new SystemRole
+                    {
+                        Name = Constants.Admin
+                    });
+
+                    // Get admin role id
+                    int roleId = await _dbContext.SystemRoles
+                        .Where(_ => _.Name.Equals(Constants.Admin))
+                        .Select(_ => _.Id)
+                        .FirstOrDefaultAsync();
+
+                    // Add user role
+                    await AddAndConfirmWithTransactionNewItemAsync(new UserRole
+                    {
+                        UserId = userId,
+                        RoleId = roleId
+                    });
+
+                    return true;
+                }
+
+                return false;
+           }
+           else
+           {
+                // Add user role
+                await AddAndConfirmWithTransactionNewItemAsync(new SystemRole
+                {
+                    Name = Constants.User
+                });
+
+                // Get user role id
+                int roleId = await _dbContext.SystemRoles
+                        .Where(_ => _.Name.Equals(Constants.User))
+                        .OrderBy(_ => _.Id)
+                        .Select(_ => _.Id)
+                        .LastAsync();
+
+                // Add user role
+                await AddAndConfirmWithTransactionNewItemAsync(new UserRole
+                {
+                    UserId = userId,
+                    RoleId = roleId
+                });
+
+                return true;
+           }
         }
     }
 }
