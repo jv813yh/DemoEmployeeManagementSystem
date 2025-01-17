@@ -7,5 +7,6 @@ namespace Server.Managers.Interfaces
     {
         Task<GeneralResponse> CreateAccountByManagerAsync(RegisterDto registerDto);
         Task<LoginResponse> SingInByManagerAsync(LoginDto loginDto);
+        Task<LoginResponse> RefreshTokenAsync(RefreshTokenDto refreshTokenDto);
     }
 }
