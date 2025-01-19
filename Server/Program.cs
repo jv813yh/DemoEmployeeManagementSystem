@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Server.Managers;
 using Server.Managers.Interfaces;
 using ServerLibrary.Data.DbContexts;
 using ServerLibrary.Helpers;
 using ServerLibrary.Repositories.Implementations;
 using ServerLibrary.Repositories.Interfaces;
+
+const string corsBlazorWasm = "AllowBlazorWasm";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +38,20 @@ builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSect
 builder.Services.AddScoped<IUserAccount, UserAccountRepository>();
 builder.Services.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(corsBlazorWasm,
+        builder =>
+        {
+            builder.WithOrigins("https://localhost:7039", "http://localhost:5151")
+                .AllowAnyHeader()
+                .AllowCredentials()
+                .AllowAnyMethod();
+        });
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,9 +62,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors(corsBlazorWasm);
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

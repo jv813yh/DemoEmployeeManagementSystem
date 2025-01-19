@@ -90,7 +90,7 @@ namespace Server.Controllers
             {
                 return BadRequest();
             }
-            var response = await _authManager.RefreshTokenAsync(refreshTokenDto);
+            var response = await _authManager.RefreshTokenByManagerAsync(refreshTokenDto);
             if (!response.Flag)
             {
                 return BadRequest(response);

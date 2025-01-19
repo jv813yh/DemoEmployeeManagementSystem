@@ -161,7 +161,9 @@ namespace ServerLibrary.Repositories.Implementations
         /// <returns></returns>
         private async Task<UserRole?> FindUserRoleAsync(int applicationUserId)
         {
-            return await _dbContext.Set<UserRole>().FirstOrDefaultAsync(a => a.UserId == applicationUserId);
+            return await _dbContext
+                        .Set<UserRole>()    
+                        .FirstOrDefaultAsync(a => a.UserId == applicationUserId);
         }
 
         /// <summary>
@@ -171,7 +173,9 @@ namespace ServerLibrary.Repositories.Implementations
         /// <returns></returns>
         private async Task<SystemRole?> FindSystemRoleAsync(int roleId)
         {
-            return await _dbContext.Set<SystemRole>().FirstOrDefaultAsync(a => a.Id == roleId);
+            return await _dbContext
+                        .Set<SystemRole>()
+                        .FirstOrDefaultAsync(a => a.Id == roleId);
         }
 
         /// <summary>

@@ -28,7 +28,7 @@ namespace Server.Managers
         /// </summary>
         /// <param name="refreshTokenDto"></param>
         /// <returns></returns>
-        public Task<LoginResponse> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+        public Task<LoginResponse> RefreshTokenByManagerAsync(RefreshTokenDto refreshTokenDto)
          => _userAccount.RefreshTokenAsync(refreshTokenDto);
 
         /// <summary>

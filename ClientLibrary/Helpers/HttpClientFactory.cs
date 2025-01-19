@@ -17,7 +17,7 @@ namespace ClientLibrary.Helpers
         }
 
         /// <summary>
-        /// Get private HttpClient with Authorization header
+        /// Get private HttpClient with Authorization header name SystemApiClient
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
@@ -46,6 +46,10 @@ namespace ClientLibrary.Helpers
             return httpClient;
         }
 
+        /// <summary>
+        /// Get public HttpClient without Authorization header name SystemApiClient
+        /// </summary>
+        /// <returns></returns>
         public HttpClient GetPublicHttpClient()
         {
             var httpClient = _httpClientFactory.CreateClient("SystemApiClient");
