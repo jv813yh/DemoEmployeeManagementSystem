@@ -37,7 +37,7 @@ namespace ClientLibrary.Helpers
             }
 
             // Decrypt the token
-            var userClaims = DecryptToken(deserializedToken.Token);
+            var userClaims = DecryptToken(deserializedToken.Token!);
             if (userClaims == null)
             {
                 return new AuthenticationState(_anonymousUser);

@@ -24,7 +24,7 @@ namespace ClientLibrary.Helpers
         public async Task<HttpClient> GetPrivateHttpClientAsync()
         {
             // Create a new HttpClient instance
-            var httpClient = _httpClientFactory.CreateClient("SystemApiClient");
+            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientApiName);
 
             // Get the token from local storage
             var token = await _localStorageProvider.GetTokenAsync();
@@ -52,7 +52,7 @@ namespace ClientLibrary.Helpers
         /// <returns></returns>
         public HttpClient GetPublicHttpClient()
         {
-            var httpClient = _httpClientFactory.CreateClient("SystemApiClient");
+            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientApiName);
             httpClient.DefaultRequestHeaders.Remove(HeaderKey);
 
             return httpClient;

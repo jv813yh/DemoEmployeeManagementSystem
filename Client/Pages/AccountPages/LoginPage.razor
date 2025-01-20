@@ -1,0 +1,50 @@
+﻿@page "/identity/account/login"
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6">
+            <EditForm Enhance Model="User" OnValidSubmit="HandleLoginAsync">
+                <DataAnnotationsValidator/>
+                <ValidationSummary/>
+                <div class="card">
+
+                    <div class="card-header">Fill this form to Login</div>
+                    <div class="card-body">
+                        <div class="form-group mt-3">
+                            <label class="form-label">Email</label>
+                            <InputText @bind-Value="User.EmailAddress" class="form-control"></InputText>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" @bind="User.Password" class="form-control" />
+                        </div>
+                        <div class="form-group mt-3">
+                            <button class="btn btn-outline-primary float-end" tyoe="submit">Login</button>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    LoginDto User = new LoginDto();
+
+    async Task HandleLoginAsync()
+    {
+        var result = await AccountService.SignInAsync(User);
+        if(result.Flag)
+        {
+            var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+            await customAuthStateProvider.UpdateAuthenticationStateAsync(new UserSessionDto()
+            { 
+                Token = result.Token, 
+                RefreshToken = result .RefreshToken
+            });
+
+            NavManager.NavigateTo("/", forceLoad:true);
+        }
+    }
+}

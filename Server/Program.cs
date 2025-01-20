@@ -1,5 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Server.Managers;
 using Server.Managers.Interfaces;
 using ServerLibrary.Data.DbContexts;
@@ -51,6 +51,14 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddAuthentication(options =>
+{
+    // Authentication scheme we want to use during authentication
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    // Challenge for user when is not login in the syste and is required
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+});
+
 
 var app = builder.Build();
 
@@ -61,8 +69,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Middlewares
 app.UseHttpsRedirection();
 app.UseCors(corsBlazorWasm);
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
