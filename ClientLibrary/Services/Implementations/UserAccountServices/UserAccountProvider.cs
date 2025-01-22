@@ -57,9 +57,24 @@ namespace ClientLibrary.Services.Implementations.UserAccountServices
             }
         }
 
-        public Task<LoginResponse> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+        public async Task<LoginResponse> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
         {
-            throw new NotImplementedException();
+            var httpClient = _httpClientFactory.GetPublicHttpClient();
+            var result = await httpClient.PostAsJsonAsync(AuthUrl + "/refresh-token", refreshTokenDto);
+
+            if(!result.IsSuccessStatusCode)
+            {
+                return new LoginResponse(false, "Token has not refreshed successfully");
+            }
+
+            var response = await result.Content.ReadFromJsonAsync<LoginResponse>();
+
+            if (response == null)
+            {
+                return new LoginResponse(false, "Error while refreshing token");
+            }
+
+            return response;
         }
 
         /// <summary>

@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Server.Managers;
 using Server.Managers.Interfaces;
 using ServerLibrary.Data.DbContexts;
 using ServerLibrary.Helpers;
 using ServerLibrary.Repositories.Implementations;
 using ServerLibrary.Repositories.Interfaces;
+using System.Text;
 
 const string corsBlazorWasm = "AllowBlazorWasm";
 
@@ -33,6 +35,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Register JwtSection
 builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSection"));
+var jwtSection = builder.Configuration.GetSection("JwtSection").Get<JwtSection>();
+if(jwtSection == null)
+{
+    throw new NullReferenceException("JwtSection not found");
+}
 
 /// Register Services
 builder.Services.AddScoped<IUserAccount, UserAccountRepository>();
@@ -51,12 +58,25 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Add Authentication with JWT Bearer
 builder.Services.AddAuthentication(options =>
 {
     // Authentication scheme we want to use during authentication
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     // Challenge for user when is not login in the syste and is required
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSection.Issuer,
+        ValidAudience = jwtSection.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection.Key!))
+    };
 });
 
 

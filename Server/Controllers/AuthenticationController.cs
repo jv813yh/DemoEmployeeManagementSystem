@@ -1,4 +1,5 @@
 ﻿using BaseLibrary.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Managers.Interfaces;
 using ServerLibrary.Repositories.Interfaces;
@@ -7,6 +8,7 @@ namespace Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationManager _authManager;
